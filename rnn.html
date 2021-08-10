@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!-- <link
+      rel="icon"
+      href="//www.xiph.org/images/logos/xiph.ico"
+      type="image/x-icon"
+    /> -->
+    <link
+      rel="stylesheet"
+      title="default demosheet"
+      href="demo.css"
+      type="text/css"
+    />
+    <!-- <link rel="stylesheet" title="default demosheet" media="print" href="demo_print.css" type="text/css"/> -->
+    <title>RNNoise: Learning Noise Suppression</title>
+    <script src="ffmap.js"></script>
+    <script src="demo.js"></script>
+    <script src="noise.js"></script>
+    <script src="record.js"></script>
+    <!-- <script src="noise.js"></script>
+    <script src="noise_interface.js"></script> -->
+  </head>
+
+  <body onload="init_demo();">
+    <div id="xiphlogo">
+      <script data-pagespeed-no-defer>
+        //<![CDATA[
+        (function() {
+          for (
+            var g =
+                "function" == typeof Object.defineProperties
+                  ? Object.defineProperty
+                  : function(b, c, a) {
+                      if (a.get || a.set)
+                        throw new TypeError(
+                          "ES3 does not support getters and setters."
+                        );
+                      b != Array.prototype &&
+                        b != Object.prototype &&
+                        (b[c] = a.value);
+                    },
+              h =
+                "undefined" != typeof window && window === this
+                  ? this
+                  : "undefined" != typeof global && null != global
+                  ? global
+                  : this,
+              k = ["String", "prototype", "repeat"],
+              l = 0;
+            l < k.length - 1;
+            l++
+          ) {
+            var m = k[l];
+            m in h || (h[m] = {});
+            h = h[m];
+          }
+          var n = k[k.length - 1],
+            p = h[n],
+            q = p
+              ? p
+              : function(b) {
+                  var c;
+                  if (null == this)
+                    throw new TypeError(
+                      "The 'this' value for String.prototype.repeat must not be null or undefined"
+                    );
+                  c = this + "";
+                  if (0 > b || 1342177279 < b)
+                    throw new RangeError("Invalid count value");
+                  b |= 0;
+                  for (var a = ""; b; )
+                    if ((b & 1 && (a += c), (b >>>= 1))) c += c;
+                  return a;
+                };
+          q != p &&
+            null != q &&
+            g(h, n, { configurable: !0, writable: !0, value: q });
+          var t = this;
+          function u(b, c) {
+            var a = b.split("."),
+              d = t;
+            a[0] in d || !d.execScript || d.execScript("var " + a[0]);
+            for (var e; a.length && (e = a.shift()); )
+              a.length || void 0 === c
+                ? d[e]
+                  ? (d = d[e])
+                  : (d = d[e] = {})
+                : (d[e] = c);
+          }
+          function v(b) {
+            var c = b.length;
+            if (0 < c) {
+              for (var a = Array(c), d = 0; d < c; d++) a[d] = b[d];
+              return a;
+            }
+            return [];
+          }
+          function w(b) {
+            var c = window;
+            if (c.addEventListener) c.addEventListener("load", b, !1);
+            else if (c.attachEvent) c.attachEvent("onload", b);
+            else {
+              var a = c.onload;
+              c.onload = function() {
+                b.call(this);
+                a && a.call(this);
+              };
+            }
+          }
+          var x;
+          function y(b, c, a, d, e) {
+            this.h = b;
+            this.j = c;
+            this.l = a;
+            this.f = e;
+            this.g = {
+              height:
+                window.innerHeight ||
+                document.documentElement.clientHeight ||
+                document.body.clientHeight,
+              width:
+                window.innerWidth ||
+                document.documentElement.clientWidth ||
+                document.body.clientWidth,
+            };
+            this.i = d;
+            this.b = {};
+            this.a = [];
+            this.c = {};
+          }
+          function z(b, c) {
+            var a,
+              d,
+              e = c.getAttribute("data-pagespeed-url-hash");
+            if ((a = e && !(e in b.c)))
+              if (0 >= c.offsetWidth && 0 >= c.offsetHeight) a = !1;
+              else {
+                d = c.getBoundingClientRect();
+                var f = document.body;
+                a =
+                  d.top +
+                  ("pageYOffset" in window
+                    ? window.pageYOffset
+                    : (document.documentElement || f.parentNode || f)
+                        .scrollTop);
+                d =
+                  d.left +
+                  ("pageXOffset" in window
+                    ? window.pageXOffset
+                    : (document.documentElement || f.parentNode || f)
+                        .scrollLeft);
+                f = a.toString() + "," + d;
+                b.b.hasOwnProperty(f)
+                  ? (a = !1)
+                  : ((b.b[f] = !0), (a = a <= b.g.height && d <= b.g.width));
+              }
+            a && (b.a.push(e), (b.c[e] = !0));
+          }
+          y.prototype.checkImageForCriticality = function(b) {
+            b.getBoundingClientRect && z(this, b);
+          };
+          u("pagespeed.CriticalImages.checkImageForCriticality", function(b) {
+            x.checkImageForCriticality(b);
+          });
+          u("pagespeed.CriticalImages.checkCriticalImages", function() {
+            A(x);
+          });
+          function A(b) {
+            b.b = {};
+            for (var c = ["IMG", "INPUT"], a = [], d = 0; d < c.length; ++d)
+              a = a.concat(v(document.getElementsByTagName(c[d])));
+            if (a.length && a[0].getBoundingClientRect) {
+              for (d = 0; (c = a[d]); ++d) z(b, c);
+              a = "oh=" + b.l;
+              b.f && (a += "&n=" + b.f);
+              if ((c = !!b.a.length))
+                for (
+                  a += "&ci=" + encodeURIComponent(b.a[0]), d = 1;
+                  d < b.a.length;
+                  ++d
+                ) {
+                  var e = "," + encodeURIComponent(b.a[d]);
+                  131072 >= a.length + e.length && (a += e);
+                }
+              b.i &&
+                ((e = "&rd=" + encodeURIComponent(JSON.stringify(B()))),
+                131072 >= a.length + e.length && (a += e),
+                (c = !0));
+              C = a;
+              if (c) {
+                d = b.h;
+                b = b.j;
+                var f;
+                if (window.XMLHttpRequest) f = new XMLHttpRequest();
+                else if (window.ActiveXObject)
+                  try {
+                    f = new ActiveXObject("Msxml2.XMLHTTP");
+                  } catch (r) {
+                    try {
+                      f = new ActiveXObject("Microsoft.XMLHTTP");
+                    } catch (D) {}
+                  }
+                f &&
+                  (f.open(
+                    "POST",
+                    d +
+                      (-1 == d.indexOf("?") ? "?" : "&") +
+                      "url=" +
+                      encodeURIComponent(b)
+                  ),
+                  f.setRequestHeader(
+                    "Content-Type",
+                    "application/x-www-form-urlencoded"
+                  ),
+                  f.send(a));
+              }
+            }
+          }
+          function B() {
+            var b = {},
+              c;
+            c = document.getElementsByTagName("IMG");
+            if (!c.length) return {};
+            var a = c[0];
+            if (!("naturalWidth" in a && "naturalHeight" in a)) return {};
+            for (var d = 0; (a = c[d]); ++d) {
+              var e = a.getAttribute("data-pagespeed-url-hash");
+              e &&
+                ((!(e in b) &&
+                  0 < a.width &&
+                  0 < a.height &&
+                  0 < a.naturalWidth &&
+                  0 < a.naturalHeight) ||
+                  (e in b && a.width >= b[e].o && a.height >= b[e].m)) &&
+                (b[e] = {
+                  rw: a.width,
+                  rh: a.height,
+                  ow: a.naturalWidth,
+                  oh: a.naturalHeight,
+                });
+            }
+            return b;
+          }
+          var C = "";
+          u("pagespeed.CriticalImages.getBeaconData", function() {
+            return C;
+          });
+          u("pagespeed.CriticalImages.Run", function(b, c, a, d, e, f) {
+            var r = new y(b, c, a, e, f);
+            x = r;
+            d &&
+              w(function() {
+                window.setTimeout(function() {
+                  A(r);
+                }, 0);
+              });
+          });
+        })();
+        pagespeed.CriticalImages.Run(
+          "/mod_pagespeed_beacon",
+          "https://jmvalin.ca/demo/rnnoise/",
+          "8Xxa2XQLv9",
+          true,
+          false,
+          "OAXfJdlZmWQ"
+        );
+        //]]>
+      </script>
+      <img
+        style="width: 476px;"
+        src="xiph_mozilla.png"
+        alt="Xiph.org and Mozilla"
+        data-pagespeed-url-hash="3466833935"
+        onload="pagespeed.CriticalImages.checkImageForCriticality(this);"
+      />
+      <h1>RNNoise: Learning Noise Suppression</h1>
+      <div class="or">
+        <a href="/~xiphmont/demo/index.html">(Monty's main demo page)</a>
+      </div>
+    </div>
+
+    <div>&nbsp;</div>
+    <img
+      class="caption"
+      style="width: 100%; padding-top: 1em; margin-left: auto; margin-right: auto;"
+      src="before.jpg"
+      alt="Banner"
+      onmouseover="this.src='after.jpg';"
+      onmouseout="this.src='before.jpg';"
+      data-pagespeed-url-hash="2672872984"
+      onload="pagespeed.CriticalImages.checkImageForCriticality(this);"
+    />
+    <div class="caption">
+      The image above shows the spectrogram of the audio before and after (when
+      moving the mouse over) noise suppression.
+    </div>
+
+    <h2>Here's RNNoise</h2>
+
+    <p>
+      This demo presents the RNNoise project, showing how deep learning can be
+      applied to noise suppression. The main idea is to combine
+      <i>classic</i> signal processing with deep learning to create a real-time
+      noise suppression algorithm that's small and <b>fast</b>. No expensive
+      GPUs required &mdash; it runs easily on a Raspberry Pi. The result is much
+      simpler (easier to tune) and sounds better than traditional noise
+      suppression systems (been there!).
+    </p>
+
+    <p></p>
+
+    <h2>Noise Suppression</h2>
+
+    <p>
+      Noise suppression is a pretty old topic in speech processing,
+      <a href="http://ieeexplore.ieee.org/document/1163209/"
+        >dating back to at least the 70s</a
+      >. As the name implies, the idea is to take a noisy signal and remove as
+      much noise as possible while causing minimum distortion to the speech of
+      interest.
+    </p>
+
+    <img
+      class="caption"
+      style="width: 500px"
+      src="noise_suppression.png"
+      alt="traditional noise suppression"
+      data-pagespeed-url-hash="2100597559"
+      onload="pagespeed.CriticalImages.checkImageForCriticality(this);"
+    />
+    <div class="caption">
+      This is a conceptual view of a conventional noise suppression algorithm. A
+      voice activity detection (VAD) module detects when the signal contains
+      voice and when it's just noise. This is used by a noise spectral
+      estimation module to figure out the spectral characteristics of the noise
+      (how much power at each frequency). Then, knowing how the noise looks
+      like, it can be "subtracted" (not as simple as it sounds) from the input
+      audio.
+    </div>
+
+    <p>
+      From looking at the figure above, noise suppression looks simple enough:
+      just three conceptually simple tasks and we're done, right? Right &mdash;
+      and wrong! Any undergrad EE student can write a noise suppression
+      algorithm that works... kinda... sometimes. The hard part is to make it
+      work well, all the time, for all kinds of noise. That requires very
+      careful tuning of every knob in the algorithm, many special cases for
+      strange signals and lots of testing. There's always some weird signal that
+      will cause problems and require more tuning and it's very easy to break
+      more things than you fix. It's 50% science, 50% art. I've been there
+      before with the noise suppressor in the
+      <a href="https://speex.org/">speexdsp library</a>. It kinda works, but
+      it's not great.
+    </p>
+
+    <h2>Deep Learning and Recurrent Neural Networks</h2>
+
+    <p>
+      Deep learning is the new version of an old idea: artificial neural
+      networks. Although those have been around since the 60s, what's new in
+      recent years is that:
+    </p>
+    <ol>
+      <li>We now know how to make them deeper than two hidden layers</li>
+      <li>
+        We know how to make recurrent networks remember patterns long in the
+        past
+      </li>
+      <li>We have the computational resources to actually train them</li>
+    </ol>
+
+    <p>
+      Recurrent neural networks (RNN) are very important here because they make
+      it possible to model time sequences instead of just considering input and
+      output frames independently. This is especially important for noise
+      suppression because we need time to get a good estimate of the noise. For
+      a long time, RNNs were heavily limited in their ability because they could
+      not hold information for a long period of time and because the gradient
+      descent process involved when back-propagating through time was very
+      inefficient (the vanishing gradient problem). Both problems were solved by
+      the invention of <i>gated units</i>, such as the Long Short-Term Memory
+      (LSTM), the Gated Recurrent Unit (GRU), and their many variants.
+    </p>
+
+    <p>
+      RNNoise uses the Gated Recurrent Unit (GRU) because it performs slightly
+      better than LSTM on this task and requires fewer resources (both CPU and
+      memory for weights). Compared to <i>simple</i> recurrent units, GRUs have
+      two extra <i>gates</i>. The <i>reset</i> gate controls whether the state
+      (memory) is used in computing the new state, whereas the
+      <i>update</i> gate controls how much the state will change based on the
+      new input. This update gate (when off) makes it possible (and easy) for
+      the GRU to remember information for a long period of time and is the
+      reason GRUs (and LSTMs) perform much better than simple recurrent units.
+    </p>
+
+    <img
+      class="caption"
+      style="width: 602px;"
+      src="simple_vs_gru.png"
+      alt="recurrent units"
+      data-pagespeed-url-hash="319167886"
+      onload="pagespeed.CriticalImages.checkImageForCriticality(this);"
+    />
+    <div class="caption">
+      Comparing a simple recurrent unit with a GRU. The difference lies in the
+      GRU's <i>r</i> and <i>z</i> gates, which make it possible to learn
+      longer-term patterns. Both are soft switches (value between 0 and 1)
+      computed based on the previous state of the whole layer and the inputs,
+      with a sigmoid activation function. When the update gate <i>z</i> is on
+      the left, then the state can remain constant over a long period of time
+      &mdash; until a condition causes <i>z</i> to switch to the right.
+    </div>
+
+    <h2>A Hybrid Approach</h2>
+
+    <p>
+      Thanks to the successes of deep learning, it is now popular to throw deep
+      neural networks at an entire problem. These approaches are called
+      <i>end-to-end</i> &mdash; it's neurons all the way down. End-to-end
+      approaches have been applied to
+      <a href="https://arxiv.org/pdf/1412.5567.pdf">speech recognition</a> and
+      to
+      <a href="https://deepmind.com/blog/wavenet-generative-model-raw-audio/"
+        >speech synthesis</a
+      >
+      On the one hand, these end-to-end systems have proven just how powerful
+      deep neural networks can be. On the other hand, these systems can
+      sometimes be both suboptimal, and wasteful in terms of resources. For
+      example, some approaches to noise suppression use layers with thousands of
+      neurons &mdash; and tens of millions of weights &mdash; to perform noise
+      suppression. The drawback is not only the computational cost of running
+      the network, but also the <i>size</i> of the model itself because your
+      library is now a thousand lines of code along with tens of megabytes (if
+      not more) worth of neuron weights.
+    </p>
+
+    <p></p>
+
+    <p>
+      That's why we went with a different approach here: keep all the basic
+      signal processing that's needed anyway (not have a neural network attempt
+      to emulate it), but let the neural network learn all the tricky parts that
+      require endless tweaking next to the signal processing. Another thing
+      that's different from <i>some</i> existing work on noise suppression with
+      deep learning is that we're targeting real-time communication rather than
+      speech recognition, so we can't afford to <i>look ahead</i> more than a
+      few milliseconds (in this case 10 ms).
+    </p>
+
+    <h3>Defining the problem</h3>
+
+    <p>
+      To avoid having a very large number of outputs &mdash; and thus a large
+      number of neurons &mdash; we decided against working directly with samples
+      or with a spectrum. Instead, we consider frequency <i>bands</i> that
+      follow the Bark scale, a frequency scale that matches how we perceive
+      sounds. We use a total of 22 bands, instead of the 480 (complex) spectral
+      values we would otherwise have to consider.
+    </p>
+
+    <img
+      class="caption"
+      style="width: 876px;"
+      src="bands.png"
+      alt="frequency bands"
+      data-pagespeed-url-hash="932540351"
+      onload="pagespeed.CriticalImages.checkImageForCriticality(this);"
+    />
+    <div class="caption">
+      Layout of the Opus bands vs the actual Bark scale. For RNNoise, we use the
+      same base layout as Opus. Since we overlap the bands, the boundaries
+      between the Opus bands become the center of the overlapped RNNoise bands.
+      The bands are wider at higher frequency because the ear has poorer
+      frequency resolution there. At low frequencies, the bands are narrower,
+      but not as narrow as the Bark scale would give because then we would not
+      have enough data to make good estimates.
+    </div>
+
+    <p>
+      Of course, we cannot reconstruct audio from just the energy in 22 bands.
+      What we can do though, is compute a gain to apply to the signal for each
+      of these bands. You can think about it as using a 22-band equalizer and
+      rapidly changing the level of each band so as to attenuate the noise, but
+      let the signal through.
+    </p>
+
+    <p>
+      There are several advantages to operating with per-band gains. First, it
+      makes for a much simpler model since there are fewer bands to compute.
+      Second, it makes it impossible to create so-called
+      <i>musical noise</i> artifacts, where only a single tone gets though while
+      its neighbours are attenuated. These artifacts are common in noise
+      suppression and quite annoying. With bands that are wide enough, we either
+      let a whole band through, or we cut it all. The third advantage comes from
+      how we optimize the model. Since the gains are always bounded between 0
+      and 1, simply using a sigmoid activation function (whose output is also
+      between 0 and 1) to compute them ensures that we can never do something
+      <b>really</b> stupid, like adding noise that wasn't there in the first
+      place.
+    </p>
+
+    <div id="gains_details" class="tooltip_off">
+      <a
+        class="rightarrow"
+        onclick="document.getElementById('gains_details').className='tooltip_on';"
+        >▶ Show nerdy details</a
+      >
+      <a
+        class="uparrow"
+        onclick="document.getElementById('gains_details').className='tooltip_off';"
+        >▼ Hide nerdy details</a
+      >
+      <p class="details">
+        For the output, we could also have chosen a rectified linear activation
+        function to represent an attenuation in dB between 0 and infinity. To
+        better optimize the gain during training, the loss function is the mean
+        squared error (MSE) applied to the gain raised to the power &alpha;. So
+        far, we have found that &alpha;=0.5 produces the best results
+        perceptually. Using &alpha;&rightarrow;0 would be equivalent to
+        minimizing the log spectral distance, and is problematic because the
+        optimal gain can be very close to zero.
+      </p>
+    </div>
+
+    <p>
+      The main drawback of the lower resolution we get from using bands is that
+      we do not have a fine enough resolution to suppress the noise between
+      pitch harmonics. Fortunately, it's not so important and there is even an
+      easy trick to do it (see the pitch filtering part below).
+    </p>
+
+    <p>
+      Since the output we're computing is based on 22 bands, it makes little
+      sense to have more frequency resolution on the input, so we use the same
+      22 bands to feed spectral information to the neural network. Because audio
+      has a <b>huge</b> dynamic range, it's much better to compute the log of
+      the energy rather than to feed the energy directly. And while we're at it,
+      it never hurts to decorrelate the features using a DCT. The resulting data
+      is a <i>cepstrum</i> based on the Bark scale, which is closely related to
+      the Mel-Frequency Cepstral Coefficients (MFCC) that are very commonly used
+      in speech recognition.
+    </p>
+
+    <p>In addition to our cepstral coefficients, we also include:</p>
+    <ul>
+      <li>
+        The first and second derivatives of the first 6 coefficients across
+        frames
+      </li>
+      <li>The pitch period (1/frequency of the fundamental)</li>
+      <li>The pitch gain (voicing strength) in 6 bands</li>
+      <li>
+        A special non-stationarity value that's useful for detecting speech (but
+        beyond the scope of this demo)
+      </li>
+    </ul>
+
+    <p>That makes a total of 42 input features to the neural network.</p>
+
+    <h3>Deep architecture</h3>
+
+    <p>
+      The deep architecture we use is inspired from the traditional approach to
+      noise suppression. Most of the work is done by 3 GRU layers. The figure
+      below shows the layers we use to compute the band gains and how the
+      architecture maps to the traditional steps in noise suppression. Of
+      course, as is often the case with neural networks we have no actual proof
+      that the network is using its layers as we intend, but the fact that the
+      topology works better than others we tried makes it reasonable to think it
+      is behaving as we designed it.
+    </p>
+
+    <img
+      class="caption"
+      style="width: 500px"
+      src="topology.png"
+      alt="network topology"
+      data-pagespeed-url-hash="1981207444"
+      onload="pagespeed.CriticalImages.checkImageForCriticality(this);"
+    />
+    <div class="caption">
+      Topology of the neural network used in this project. Each box represents a
+      layer of neurons, with the number of units indicated in parentheses.
+      <i>Dense</i> layers are fully-connected, non-recurrent layers. One of the
+      outputs of the network is a set of gains to apply at different
+      frequencies. The other output is a voice activity probability, which is
+      not used for noise suppression but is a useful by-product of the network.
+    </div>
+
+    <h3>It's all about the data</h3>
+
+    <p>
+      Even deep neural networks can be pretty dumb sometimes. They're very good
+      at what they know about, but they can make pretty spectacular mistakes on
+      inputs that are too far from what they know about. Even worse, they're
+      really lazy students. If they can use any sort of loophole in the training
+      process to avoid learning something hard, then they will. That is why the
+      quality of the training data is critical.
+    </p>
+
+    <div id="tank_details" class="tooltip_off">
+      <a
+        class="rightarrow"
+        onclick="document.getElementById('tank_details').className='tooltip_on';"
+        >▶ Show nerdy details</a
+      >
+      <a
+        class="uparrow"
+        onclick="document.getElementById('tank_details').className='tooltip_off';"
+        >▼ Hide nerdy details</a
+      >
+      <p class="details">
+        A widely-circulated story is that a long time ago, some army researchers
+        were trying to train a neural network to recognize tanks camouflaged in
+        trees. They took pictures of trees with and without tanks, then trained
+        a neural network to identify the ones that had a tank. The network
+        succeeded beyond expectations! There was just one problem. Since the
+        photos with tanks had been taken on cloudy days while the photos without
+        tanks had been taken on sunny days, what the network really learned was
+        how to tell a cloudy day from a sunny day. While researchers are now
+        aware of the issue and avoid such obvious mistakes, more subtle versions
+        of it can still occur (and have occurred to yours truly in the past).
+      </p>
+    </div>
+
+    <p>
+      In the case of noise suppression, we can't just collect input/output data
+      that can be used for supervised learning since we can rarely get both the
+      clean speech <b>and</b> the noisy speech at the same time. Instead, we
+      have to artificially create that data from separate recordings of clean
+      speech and noise. The tricky part is getting a wide variety of noise data
+      to add to the speech. We also have to make sure to cover all kinds of
+      recording conditions. For example, an early version trained only on
+      full-band audio (0-20&nbsp;kHz) would fail when the audio was low-pass
+      filtered at 8&nbsp;kHz.
+    </p>
+
+    <div id="cms_details" class="tooltip_off">
+      <a
+        class="rightarrow"
+        onclick="document.getElementById('cms_details').className='tooltip_on';"
+        >▶ Show nerdy details</a
+      >
+      <a
+        class="uparrow"
+        onclick="document.getElementById('cms_details').className='tooltip_off';"
+        >▼ Hide nerdy details</a
+      >
+      <p class="details">
+        Unlike what is common for speech recognition, we choose not to apply
+        cepstral mean normalization to our features and we retain the first
+        cepstral coefficient that represents the energy. Because of that, we
+        have to ensure that the data includes audio at all realistic levels. We
+        also apply random filters to the audio to make the system robust to a
+        variety of microphone frequency responses (which is normally handled by
+        cepstral mean normalization).
+      </p>
+    </div>
+
+    <h3>Pitch filtering</h3>
+
+    <p>
+      Since the frequency resolution of our bands is too coarse to filter noise
+      between pitch harmonics, we do it using basic signal processing. This is
+      another part of the hybrid approach. When one has multiple measurements of
+      the same variable, the easiest way to improve the accuracy (reduce noise)
+      is simply to compute the average. Obviously, just computing the average of
+      adjacent audio samples isn't what we want since it would result in
+      low-pass filtering. However, when the signal is periodic (such as voiced
+      speech), then we can compute the average of samples offset by the pitch
+      period. This results in a <i>comb filter</i> that lets pitch harmonics
+      through, while attenuating the frequencies between them &mdash; where the
+      noise lies. To avoid distorting the signal, the comb filter is applied
+      independently for each band and its filter strength depends both on the
+      pitch correlation and on the band gain computed by the neural network.
+    </p>
+
+    <div id="pitch_details" class="tooltip_off">
+      <a
+        class="rightarrow"
+        onclick="document.getElementById('pitch_details').className='tooltip_on';"
+        >▶ Show nerdy details</a
+      >
+      <a
+        class="uparrow"
+        onclick="document.getElementById('pitch_details').className='tooltip_off';"
+        >▼ Hide nerdy details</a
+      >
+      <p class="details">
+        We currently use an FIR filter for the pitch filtering, but it is also
+        possible (and on the TODO list) to use an IIR filter, which would result
+        in greater noise attenuation at the risk of higher distortion if the
+        strength is too aggressive.
+      </p>
+    </div>
+
+    <h3>From Python to C</h3>
+
+    <p>
+      All the design and training of the neural network is done in Python using
+      the awesome <a href="https://keras.io/">Keras</a> deep learning library.
+      Since Python is usually not the language of choice for real-time systems,
+      we have to implement the run-time code in C. Fortunately, running a neural
+      network is by far easier than training one, so all we had to do was
+      implement feed-forward and GRU layers. To make it easier to fit the
+      weights in a reasonable footprint, we constrain the magnitude of the
+      weights to +/-&nbsp;0.5 during training, which makes it easy to store them
+      using 8-bit values. The resulting model fits in just 85&nbsp;kB (instead
+      of the 340&nbsp;kB required to store the weights as 32-bit floats).
+    </p>
+
+    <p>
+      The C code is
+      <a href="https://gitlab.xiph.org/xiph/rnnoise/">available</a> under a BSD
+      license. Although as of writing this demo, the code is not yet optimized,
+      it already runs about 60x&nbsp;faster than real-time on an x86 CPU. It
+      even runs about 7x&nbsp;faster than real-time on a Raspberry Pi&nbsp;3.
+      With good vectorization (SSE/AVX), it should be possible to make it about
+      4x&nbsp;faster than it currently is.
+    </p>
+
+    <h2>Show Me the Samples!</h2>
+
+    <p>
+      OK, that's nice and all, but how does it actually <b>sound</b>? Here's
+      some examples of RNNoise in action, removing three different types of
+      noise. Neither the noise nor the clean speech were used during the
+      training.
+    </p>
+
+    <div class="comparison">
+      <audio controls="" id="music_player">
+        Your browser does not support the audio tag.
+      </audio>
+      <div>
+        <p class="compare_label" style="display: inline-block">
+          Suppression algorithm
+        </p>
+        <ul class="algorithm">
+          <li onclick="setProcessing(0, this);" id="default_processing">
+            No suppression
+          </li>
+          <li onclick="setProcessing(1, this);">RNNoise</li>
+          <li onclick="setProcessing(2, this);">Speexdsp</li>
+        </ul>
+      </div>
+      <div>
+        <p class="compare_label" style="display: inline-block">
+          Noise level (SNR)
+        </p>
+        <ul class="codec">
+          <li onclick="setLevel(0, this);">0 dB</li>
+          <li onclick="setLevel(1, this);">5 dB</li>
+          <li onclick="setLevel(2, this);">10 dB</li>
+          <li onclick="setLevel(3, this);" id="default_level">15 dB</li>
+          <li onclick="setLevel(4, this);">20 dB</li>
+          <li onclick="setLevel(5, this);">Clean</li>
+        </ul>
+      </div>
+      <div>
+        <p class="compare_label" style="display: inline-block">Noise type</p>
+        <ul class="bitrate" id="noise_type_selector">
+          <li onclick="setType(0, this);" id="default_type">Babble noise</li>
+          <li onclick="setType(1, this);">Car noise</li>
+          <li onclick="setType(2, this);">Street noise</li>
+        </ul>
+      </div>
+      <p>Select where to start playing when selecting a new sample</p>
+      <button type="button" onclick="music_norestart();">Keep playing</button>
+      <button type="button" onclick="music_setrestart();">
+        Set current position as restart point
+      </button>
+      <p style="display: inline-block" id="music_restart_string">
+        Player will <b>continue</b> when changing sample.
+      </p>
+    </div>
+    <div class="caption">
+      <p>
+        Evaluating the effect of RNNoise compared to no suppression and to the
+        Speexdsp noise suppressor. Although the SNRs provided go as low as
+        0&nbsp;dB, most applications we are targeting (e.g. WebRTC calls) tend
+        to have SNRs closer to 20&nbsp;dB than to 0&nbsp;dB.
+      </p>
+    </div>
+
+    <p>
+      So what should you listen for anyway? As strange as it may sound, you
+      should <b>not</b> be expecting an increase in intelligibility. Humans are
+      so good at understanding speech in noise that an enhancement algorithm
+      &mdash; especially one that isn't allowed to look ahead of the speech it's
+      denoising &mdash; can only destroy information. So why are we doing this
+      in the first place? For quality. The enhanced speech is much less annoying
+      to listen to and likely causes less listener fatigue.
+    </p>
+
+    <p>
+      Actually, there are still a few cases where it can actually help
+      intelligibility. The first is videoconferencing, when multiple speakers
+      are being mixed together. For that application, noise suppression prevents
+      the noise from all the inactive speakers from being mixed in with the
+      active speaker, improving both quality and intelligibility. A second case
+      is when the speech goes through a low bitrate codec. Those tend to degrade
+      noisy speech more than clean speech, so removing the noise allows the
+      codec to do a better job.
+    </p>
+
+    <h3>Try it on your voice!</h3>
+
+    <p>
+      Not happy with the samples above? You can actually record from your
+      microphone and have your audio denoised in (near) real-time. If you click
+      on the button below, RNNoise will perform noise suppression in Javascript
+      from your browser. The algorithm runs in real-time but we've purposely
+      <b>delayed it by a few seconds</b> to make it easier to hear the denoised
+      output.
+      <b>Make sure to wear headphones otherwise you'll hear a feedback loop.</b>
+      To start the demo, select either "No suppression" or "RNNoise". You can
+      toggle between the two to see the effect of the suppression. If your input
+      doesn't have enough noise, you can artificially add some by clicking the
+      "white noise" button.
+    </p>
+
+    <div class="comparison">
+      <div>
+        <p class="compare_label" style="display: inline-block">
+          Suppression algorithm
+        </p>
+        <ul class="algorithm">
+          <li
+            onclick="liveNoiseSuppression(0, this);"
+            id="default_live_noise_suppression"
+          >
+            Off
+          </li>
+          <li onclick="liveNoiseSuppression(1, this);">No suppression</li>
+          <li onclick="liveNoiseSuppression(2, this);">RNNoise</li>
+        </ul>
+      </div>
+
+      <p class="compare_label" style="display: inline-block">Noise type</p>
+      <ul class="bitrate">
+        <li onclick="liveNoise(0, this);" id="default_live_noise">None</li>
+        <li onclick="liveNoise(1, this);">White noise</li>
+      </ul>
+    </div>
+
+    <canvas id="source_spectrogram" width="16" height="16"></canvas>
+    <canvas id="destination_spectrogram" width="16" height="16"></canvas>
+
+    <h3>Donate Your Noise to Science</h3>
+
+    <div style="text-decoration: line-through; color: gray;">
+      <p>
+        If you think this work is useful, there's an easy way to help make it
+        even better! All it takes is a minute of your time. Click on the link
+        below, to let us record one minute of noise from where you are. This
+        noise can be used to improve the training of the neural network. As a
+        side benefit, it means that the network will know what kind of noise you
+        have and might do a better job when you get to use it for
+        videoconferencing (e.g. in WebRTC). We're interested in noise from any
+        environment where you might communicate using voice. That can be your
+        office, your car, on the street, or anywhere you might use your phone or
+        computer.
+      </p>
+    </div>
+
+    <p>
+      Thanks to everyone who donated their noise. The data is now
+      <a href="https://media.xiph.org/rnnoise/rnnoise_contributions.tar.gz"
+        >freely available for download</a
+      >
+      (6.4 GB). See the included README file for more details.
+    </p>
+
+    <h2>Where from here?</h2>
+
+    <p>
+      If you'd like to know more about the technical details of RNNoise, see
+      this <a href="https://arxiv.org/pdf/1709.08243.pdf">paper</a> (not yet
+      submitted). The code is still under active development (with no frozen
+      API), but is already usable in applications. It is currently targeted at
+      VoIP/videoconferencing applications, but with a few tweaks, it can
+      probably be applied to many other tasks. An obvious target is automatic
+      speech recognition (ASR), and while we can just denoise the noisy speech
+      and send the output to the ASR, this is sub-optimal because it discards
+      useful information about the inherent uncertainty of the process. It's a
+      lot more useful when the ASR knows not only the most likely clean speech,
+      but also how much it can rely on that estimate. Another possible
+      "retargeting" for RNNoise is making a much smarter <i>noise gate</i> for
+      electric musical instruments. All it should take is good training data and
+      a few changes to the code to turn a Raspberry Pi into a really good guitar
+      noise gate. Any takers? There are probably many other potential
+      applications we haven't considered yet.
+    </p>
+
+    <p>
+      If you would like to comment on this demo, you can do so on
+      <a href="https://jmvalin.dreamwidth.org/15210.html">here</a>.
+    </p>
+
+    <address style="clear: both;">
+      &mdash;Jean-Marc Valin (<a href="mailto:jmvalin@jmvalin.ca"
+        >jmvalin@jmvalin.ca</a
+      >) September 27, 2017
+    </address>
+
+    <h2>Additional Resources</h2>
+    <ol style="padding-bottom: 1em;">
+      <li>
+        The code:
+        <a href="https://gitlab.xiph.org/xiph/rnnoise/"
+          >RNNoise Git repository</a
+        >
+        (<a href="https://github.com/xiph/rnnoise/">Github mirror</a>)
+      </li>
+      <li>
+        J.-M. Valin,
+        <a href="https://jmvalin.ca/papers/rnnoise_mmsp2018.pdf"
+          >A Hybrid DSP/Deep Learning Approach to Real-Time Full-Band Speech
+          Enhancement</a
+        >, International Workshop on Multimedia Signal Processing, 2018. (<span
+          style="font-family: monospace;"
+          >arXiv:<a href="https://arxiv.org/abs/1709.08243">1709.08243</a></span
+        >)
+      </li>
+      <li>
+        Jean-Marc's
+        <a href="https://jmvalin.dreamwidth.org/15210.html">blog post</a> for
+        comments
+      </li>
+    </ol>
+
+    <h2>Acknowledgements</h2>
+    <p>
+      Special thanks to Michael Bebenita, Thomas Daede and Yury Delendik for
+      their help putting together this demo. Thanks to Reuben Morais for his
+      help with Keras.
+    </p>
+
+    <hr />
+
+    <div class="et" style="position: relative;">
+      <!--<div style="position: absolute; bottom: -10px;">
+        <a href="https://mozilla.org/"><img src="moz-logo2.png" alt="Mozilla"/></a>
+      </div>-->
+      <div class="etleft" style="width: 132px; height: 75px;"></div>
+      <div class="etcenter">
+        <div class="etcontent">
+          Jean-Marc's documentation work is sponsored by Mozilla Emerging
+          Technologies.
+          <br />(C) Copyright 2017 Mozilla and Xiph.Org
+        </div>
+      </div>
+      <div class="etright">
+        <div class="etcontent">
+          <a href="https://research.mozilla.org/"
+            ><img
+              src="moz-logo-bw-rgb.png"
+              style="width:240px;padding-top:0px;padding-bottom:0px;float:right;margin-left: 1em; margin-right:0px"
+              alt="Mozilla"
+              data-pagespeed-url-hash="3221421823"
+              onload="pagespeed.CriticalImages.checkImageForCriticality(this);"
+          /></a>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
