@@ -3,154 +3,154 @@ var MIN_DB_LEVEL = -110;
 var MAX_DB_LEVEL = -40;
 
 var DB_LEVEL_RANGE = MAX_DB_LEVEL - MIN_DB_LEVEL;
-var HEAT_COLORS = [];
-function generateHeatColors() {
-  function color(value) {
-    var h = (1 - value) * 240;
-    return "hsl(" + h + ", 100%, 50%)";
-  }
-  for (var i = 0; i < 256; i++) {
-    HEAT_COLORS.push(color(i / 256));
-  }
-}
-generateHeatColors();
-function clamp(v, a, b) {
-  if (v < a) v = a;
-  if (v > b) v = b;
-  return v;
-}
-var DarkTheme = {
-  // backgroundColor: "#212121"
-  backgroundColor: "#000000"
-};
-var LightTheme = {
-  backgroundColor: "#F5F5F5"
-};
+// var HEAT_COLORS = [];
+// function generateHeatColors() {
+//   function color(value) {
+//     var h = (1 - value) * 240;
+//     return "hsl(" + h + ", 100%, 50%)";
+//   }
+//   for (var i = 0; i < 256; i++) {
+//     HEAT_COLORS.push(color(i / 256));
+//   }
+// }
+// generateHeatColors();
+// function clamp(v, a, b) {
+//   if (v < a) v = a;
+//   if (v > b) v = b;
+//   return v;
+// }
+// var DarkTheme = {
+//   // backgroundColor: "#212121"
+//   backgroundColor: "#000000"
+// };
+// var LightTheme = {
+//   backgroundColor: "#F5F5F5"
+// };
 
-var __extends = this && this.__extends || function() {
-  var extendStatics = Object.setPrototypeOf || {
-    __proto__: []
-  } instanceof Array && function(d, b) {
-    d.__proto__ = b;
-  } || function(d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-  };
-  return function(d, b) {
-    extendStatics(d, b);
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-}();
+// var __extends = this && this.__extends || function() {
+//   var extendStatics = Object.setPrototypeOf || {
+//     __proto__: []
+//   } instanceof Array && function(d, b) {
+//     d.__proto__ = b;
+//   } || function(d, b) {
+//     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+//   };
+//   return function(d, b) {
+//     extendStatics(d, b);
+//     function __() {
+//       this.constructor = d;
+//     }
+//     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+//   };
+// }();
 
-var CanvasView = function() {
-  function CanvasView(canvas, width, height) {
-    this.canvas = canvas;
-    this.width = width;
-    this.height = height;
-    this.theme = DarkTheme;
-    this.reset();
-  }
-  CanvasView.prototype.reset = function() {
-    this.ratio = window.devicePixelRatio || 1;
-    this.canvas.width = this.width * this.ratio;
-    this.canvas.height = this.height * this.ratio;
-    this.canvas.style.width = this.width + "px";
-    this.canvas.style.height = this.height + "px";
-    this.ctx = this.canvas.getContext("2d");
-  };
-  // CanvasView.prototype.start = function() {
-  //   var self = this;
-  //   function tick() {
-  //     self.update();
-  //     self.render();
-  //     requestAnimationFrame(tick);
-  //   }
-  //   requestAnimationFrame(tick);
-  // };
-  CanvasView.prototype.tick = function() {
-    this.update();
-    this.render();
-  };
-  CanvasView.prototype.update = function() {};
-  CanvasView.prototype.render = function() {};
-  return CanvasView;
-}();
-var FrequencyBins = function() {
-  function FrequencyBins(analyzerNode, skip) {
-    if (skip === void 0) {
-      skip = 2;
-    }
-    this.analyzerNode = analyzerNode;
-    this.skip = skip;
-    var binCount = this.analyzerNode.frequencyBinCount;
-    this.temp = new Float32Array(binCount);
-    this.bins = new Float32Array(binCount - skip);
-  }
-  FrequencyBins.prototype.update = function() {
-    this.analyzerNode.getFloatFrequencyData(this.temp);
-    this.bins.set(this.temp.subarray(this.skip));
-  };
-  return FrequencyBins;
-}();
-var AnalyzerNodeView = function(_super) {
-  __extends(AnalyzerNodeView, _super);
-  function AnalyzerNodeView(analyzerNode, canvas, width, height) {
-    var _this = _super.call(this, canvas, width, height) || this;
-    _this.isRecording = false;
-    _this.frequency = new FrequencyBins(analyzerNode);
-    return _this;
-  }
-  return AnalyzerNodeView;
-}(CanvasView);
-var SpectogramAnalyzerNodeView = function(_super) {
-  __extends(SpectogramAnalyzerNodeView, _super);
-  function SpectogramAnalyzerNodeView(analyzerNode, canvas, width, height) {
-    var _this = _super.call(this, analyzerNode, canvas, width, height) || this;
-    _this.binWidth = 1;
-    _this.binHPadding = 0;
-    _this.binTotalWidth = _this.binWidth + _this.binHPadding;
-    _this.tickHeight = 2;
-    _this.tickVPadding = 0;
-    _this.tickTotalHeight = _this.tickHeight + _this.tickVPadding;
-    _this.reset();
-    // _this.start();
-    return _this;
-  }
-  SpectogramAnalyzerNodeView.prototype.reset = function() {
-    _super.prototype.reset.call(this);
-    this.tmpCanvas = document.createElement("canvas");
-    this.tmpCanvas.width = this.canvas.width;
-    this.tmpCanvas.height = this.canvas.height;
-    this.tmpCtx = this.tmpCanvas.getContext("2d");
-  };
-  SpectogramAnalyzerNodeView.prototype.update = function() {
-    this.frequency.update();
-  };
-  SpectogramAnalyzerNodeView.prototype.render = function() {
-    var ctx = this.ctx;
-    this.tmpCtx.drawImage(this.canvas, 0, 0, this.canvas.width, this.canvas.height);
-    ctx.save();
-    ctx.save();
-    ctx.scale(this.ratio, this.ratio);
-    ctx.fillStyle = this.theme.backgroundColor;
-    ctx.fillRect(0, 0, this.width, this.height);
-    var maxBinCount = this.width / this.binTotalWidth | 0;
-    var binCount = Math.min(maxBinCount, this.frequency.bins.length);
-    for (var i = 0; i < binCount / 2 | 0; i++) {
-      var value = clamp((this.frequency.bins[i] - MIN_DB_LEVEL) / DB_LEVEL_RANGE, 0, 0.995);
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = FF_MAP[value * FF_MAP.length | 0];
-      ctx.fillRect(this.width - this.binTotalWidth, (binCount/4-i-1) * this.tickTotalHeight, this.binWidth, this.tickHeight);
-    }
-    ctx.restore();
-    ctx.translate(-this.binTotalWidth, 0);
-    ctx.drawImage(this.tmpCanvas, 0, 0);
-    ctx.restore();
-  };
-  return SpectogramAnalyzerNodeView;
-}(AnalyzerNodeView);
+// var CanvasView = function() {
+//   function CanvasView(canvas, width, height) {
+//     this.canvas = canvas;
+//     this.width = width;
+//     this.height = height;
+//     this.theme = DarkTheme;
+//     this.reset();
+//   }
+//   CanvasView.prototype.reset = function() {
+//     this.ratio = window.devicePixelRatio || 1;
+//     this.canvas.width = this.width * this.ratio;
+//     this.canvas.height = this.height * this.ratio;
+//     this.canvas.style.width = this.width + "px";
+//     this.canvas.style.height = this.height + "px";
+//     this.ctx = this.canvas.getContext("2d");
+//   };
+//   // CanvasView.prototype.start = function() {
+//   //   var self = this;
+//   //   function tick() {
+//   //     self.update();
+//   //     self.render();
+//   //     requestAnimationFrame(tick);
+//   //   }
+//   //   requestAnimationFrame(tick);
+//   // };
+//   CanvasView.prototype.tick = function() {
+//     this.update();
+//     this.render();
+//   };
+//   CanvasView.prototype.update = function() {};
+//   CanvasView.prototype.render = function() {};
+//   return CanvasView;
+// }();
+// var FrequencyBins = function() {
+//   function FrequencyBins(analyzerNode, skip) {
+//     if (skip === void 0) {
+//       skip = 2;
+//     }
+//     this.analyzerNode = analyzerNode;
+//     this.skip = skip;
+//     var binCount = this.analyzerNode.frequencyBinCount;
+//     this.temp = new Float32Array(binCount);
+//     this.bins = new Float32Array(binCount - skip);
+//   }
+//   FrequencyBins.prototype.update = function() {
+//     this.analyzerNode.getFloatFrequencyData(this.temp);
+//     this.bins.set(this.temp.subarray(this.skip));
+//   };
+//   return FrequencyBins;
+// }();
+// var AnalyzerNodeView = function(_super) {
+//   __extends(AnalyzerNodeView, _super);
+//   function AnalyzerNodeView(analyzerNode, canvas, width, height) {
+//     var _this = _super.call(this, canvas, width, height) || this;
+//     _this.isRecording = false;
+//     _this.frequency = new FrequencyBins(analyzerNode);
+//     return _this;
+//   }
+//   return AnalyzerNodeView;
+// }(CanvasView);
+// var SpectogramAnalyzerNodeView = function(_super) {
+//   __extends(SpectogramAnalyzerNodeView, _super);
+//   function SpectogramAnalyzerNodeView(analyzerNode, canvas, width, height) {
+//     var _this = _super.call(this, analyzerNode, canvas, width, height) || this;
+//     _this.binWidth = 1;
+//     _this.binHPadding = 0;
+//     _this.binTotalWidth = _this.binWidth + _this.binHPadding;
+//     _this.tickHeight = 2;
+//     _this.tickVPadding = 0;
+//     _this.tickTotalHeight = _this.tickHeight + _this.tickVPadding;
+//     _this.reset();
+//     // _this.start();
+//     return _this;
+//   }
+//   SpectogramAnalyzerNodeView.prototype.reset = function() {
+//     _super.prototype.reset.call(this);
+//     this.tmpCanvas = document.createElement("canvas");
+//     this.tmpCanvas.width = this.canvas.width;
+//     this.tmpCanvas.height = this.canvas.height;
+//     this.tmpCtx = this.tmpCanvas.getContext("2d");
+//   };
+//   SpectogramAnalyzerNodeView.prototype.update = function() {
+//     this.frequency.update();
+//   };
+//   SpectogramAnalyzerNodeView.prototype.render = function() {
+//     var ctx = this.ctx;
+//     this.tmpCtx.drawImage(this.canvas, 0, 0, this.canvas.width, this.canvas.height);
+//     ctx.save();
+//     ctx.save();
+//     ctx.scale(this.ratio, this.ratio);
+//     ctx.fillStyle = this.theme.backgroundColor;
+//     ctx.fillRect(0, 0, this.width, this.height);
+//     var maxBinCount = this.width / this.binTotalWidth | 0;
+//     var binCount = Math.min(maxBinCount, this.frequency.bins.length);
+//     for (var i = 0; i < binCount / 2 | 0; i++) {
+//       var value = clamp((this.frequency.bins[i] - MIN_DB_LEVEL) / DB_LEVEL_RANGE, 0, 0.995);
+//       ctx.globalAlpha = 1;
+//       ctx.fillStyle = FF_MAP[value * FF_MAP.length | 0];
+//       ctx.fillRect(this.width - this.binTotalWidth, (binCount/4-i-1) * this.tickTotalHeight, this.binWidth, this.tickHeight);
+//     }
+//     ctx.restore();
+//     ctx.translate(-this.binTotalWidth, 0);
+//     ctx.drawImage(this.tmpCanvas, 0, 0);
+//     ctx.restore();
+//   };
+//   return SpectogramAnalyzerNodeView;
+// }(AnalyzerNodeView);
 
 
 
@@ -272,7 +272,7 @@ function getMicrophoneAccess() {
       for (let i = 0; i < 480; i++) {
         outputBuffer.push(frameBuffer[i]);
       }
-       console.timeEnd("noise");
+      console.timeEnd("noise");
     }
     // Not enough data, exit early, etherwise the AnalyserNode returns NaNs.
     if (outputBuffer.length < bufferSize) {
@@ -310,14 +310,14 @@ function getMicrophoneAccess() {
     destinationAnalyserNode.connect(audioContext.destination);
     microphoneIsWiredUp = true;
 
-    var sourceView = new SpectogramAnalyzerNodeView(sourceAnalyserNode, document.getElementById("source_spectrogram"), 876, 256);
-    var destinationView = new SpectogramAnalyzerNodeView(destinationAnalyserNode, document.getElementById("destination_spectrogram"), 876, 256);
-    function tick() {
-      sourceView.tick();
-      destinationView.tick();
-      animation = requestAnimationFrame(tick);
-    }
-    animation = requestAnimationFrame(tick);
+    // var sourceView = new SpectogramAnalyzerNodeView(sourceAnalyserNode, document.getElementById("source_spectrogram"), 876, 256);
+    // var destinationView = new SpectogramAnalyzerNodeView(destinationAnalyserNode, document.getElementById("destination_spectrogram"), 876, 256);
+    // function tick() {
+    //   sourceView.tick();
+    //   destinationView.tick();
+    //   animation = requestAnimationFrame(tick);
+    // }
+    // animation = requestAnimationFrame(tick);
 
   }, function (e) {
     if (e.name === "PermissionDeniedError") {
@@ -410,6 +410,7 @@ function toggleNoise() {
 
 var selectedLiveNoiseSuppression = null;
 function liveNoiseSuppression(type, item) {
+  console.log("item",item);
   if (selectedLiveNoiseSuppression) selectedLiveNoiseSuppression.classList.remove("selected");
   selectedLiveNoiseSuppression = item;
   item.classList.add("selected");
